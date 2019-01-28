@@ -1,0 +1,10 @@
+lib/
+test/
+.idea/
+.rp2_cache/
+
+rollup.config.js
+tslint.json
+tsconfig.json
+README.md
+.gitignore

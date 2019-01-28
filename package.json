@@ -1,0 +1,48 @@
+{
+  "name": "ts-packet",
+  "version": "1.0.0",
+  "description": "Typescript npm module for easy interfacing with structured data such as packets coming from a UDP or TCP socket.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist/* && npx rollup -c",
+    "test": "npm run build && export TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' && npx mocha -r ts-node/register test/**/*.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chriskinzel/ts-packet.git"
+  },
+  "keywords": [
+    "typescript",
+    "packet",
+    "struct",
+    "networking"
+  ],
+  "author": "Chris Kinzel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chriskinzel/ts-packet/issues"
+  },
+  "homepage": "https://github.com/chriskinzel/ts-packet#readme",
+  "dependencies": {
+    "@types/node": "^10.12.18",
+    "@types/utf8": "^2.1.6",
+    "rxjs": "^6.3.3",
+    "utf8": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^5.2.0",
+    "rollup": "^1.1.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-typescript2": "^0.19.2",
+    "ts-node": "^8.0.1",
+    "tslint": "^5.12.1",
+    "typescript": "^3.2.4"
+  }
+}
