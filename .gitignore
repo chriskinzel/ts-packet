@@ -142,5 +142,5 @@ fabric.properties
 # TypeScript compiled output directory
 dist/
 types/
-.rp2_cache/
+.rpt2_cache/
 
