@@ -1,6 +1,6 @@
 {
   "name": "ts-packet",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Typescript npm module for easy interfacing with structured data such as packets coming from a UDP or TCP socket.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
