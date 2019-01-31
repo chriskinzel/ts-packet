@@ -5,13 +5,14 @@ import {concat, Observable} from 'rxjs';
 import {map, shareReplay, toArray} from 'rxjs/operators';
 import {readTypedFieldFromBuffer} from './BufferReadUtils';
 import {typedFieldToBuffer} from './BufferWriteUtils';
+import {runImmediately} from './custom-rxjs';
 import {readTypedFieldFromReadable} from './ReadableReadUtils';
 import {BUFFER_OFFSET_SYMBOL, PACKET_STRUCTURE_SYMBOL, PacketFieldStructureMetadata} from './Types';
 
 export abstract class AbstractPacket {
 
     public writeTo(writable: WritableStream): Observable<void> {
-        const observable: Observable<void> = Observable.create(observer => {
+        return Observable.create(observer => {
             const write = () => {
                 writable.write(this.data, error => {
                     if (error === undefined || error === null) {
@@ -28,10 +29,7 @@ export abstract class AbstractPacket {
             } else {
                 writable.once('drain', write);
             }
-        }).pipe(shareReplay());
-
-        observable.subscribe();
-        return observable;
+        }).pipe(shareReplay(), runImmediately());
     }
 
     public readFrom(readable: ReadStream): Observable<this> {
