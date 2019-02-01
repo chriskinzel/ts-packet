@@ -1,6 +1,6 @@
 {
   "name": "ts-packet",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Typescript npm module for easy interfacing with structured data such as packets coming from a UDP or TCP socket.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,12 +25,12 @@
   },
   "homepage": "https://github.com/chriskinzel/ts-packet#readme",
   "dependencies": {
-    "@types/node": "^10.12.18",
-    "@types/utf8": "^2.1.6",
     "rxjs": "^6.3.3",
     "utf8": "^3.0.0"
   },
   "devDependencies": {
+    "@types/node": "^10.12.18",
+    "@types/utf8": "^2.1.6",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^5.2.5",
