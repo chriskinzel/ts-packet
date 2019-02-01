@@ -2,24 +2,14 @@ import {assert, expect} from 'chai';
 import 'mocha';
 import * as net from 'net';
 import {AddressInfo, Server, Socket} from 'net';
-import {Observable} from 'rxjs';
-import {take, toArray} from 'rxjs/operators';
+import {of} from 'rxjs';
+import {catchError, mapTo, take, toArray} from 'rxjs/operators';
 import {PacketEvent, PacketStream, UInt8} from '../dist';
-import {runImmediately} from '../lib/custom-rxjs';
+import {ignoreErrors, runImmediately} from '../lib/custom-rxjs';
 import {UInt16TypedPacket} from './test-packets/TypedPackets/UInt16TypedPacket';
 import {UInt32TypedPacket} from './test-packets/TypedPackets/UInt32TypedPacket';
 import {UInt8TypedPacket} from './test-packets/TypedPackets/UInt8TypedPacket';
 import {UInt8TypedPacket2} from './test-packets/TypedPackets/UInt8TypedPacket2';
-
-function observableToErrorPromise(observable: Observable<any>): Promise<boolean> {
-    return new Promise(resolve => {
-        observable.subscribe(undefined, () => {
-            resolve(false);
-        }, () => {
-            resolve(true);
-        });
-    });
-}
 
 describe('Packet streaming', () => {
 
@@ -169,13 +159,41 @@ describe('Packet streaming', () => {
                     assert.fail();
                 });
 
-                event.ifUnknown((type, recoveryOptions) => {
+                event.ifUnknown((recoveryOptions, type) => {
                     recoveryOptions.reset();
                     expect(type).to.equal(incomingPacket1.packetType);
 
                     incomingPacket2.writeTo(inSocket);
                 });
             }, undefined, () => resolve());
+        });
+    });
+
+    it('should be able to recover from unknown packets by continuing stream', async () => {
+        const incomingPacket1 = new UInt8TypedPacket2();
+        incomingPacket1.writeTo(inSocket);
+
+        const incomingPacket2 = new UInt8TypedPacket();
+        incomingPacket2.uint32Field = 0xC0FFEE;
+        incomingPacket2.writeTo(inSocket);
+
+        const packetStream = new PacketStream<UInt8>(UInt8TypedPacket);
+
+        await new Promise(resolve => {
+            packetStream.attachToStream(outSocket).subscribe(event => {
+                event.if(UInt8TypedPacket, packet => {
+                    expect(packet).to.eql(incomingPacket2);
+                    resolve();
+                });
+
+                event.if(UInt8TypedPacket2, packet => {
+                    assert.fail();
+                });
+
+                event.ifUnknown((recoveryOptions, type) => {
+                    recoveryOptions.continue();
+                });
+            });
         });
     });
 
@@ -218,7 +236,7 @@ describe('Packet streaming', () => {
                     assert.fail();
                 });
 
-                event.ifUnknown((type, recoveryOptions) => {
+                event.ifUnknown((recoveryOptions, type) => {
                     recoveryOptions.ignore();
                     expect(type).to.equal(incomingPacket2.packetType);
                 });
@@ -228,15 +246,19 @@ describe('Packet streaming', () => {
 
     it('shouldn\'t allow multiple streamers on the same socket', async () => {
         const packetStream1 = new PacketStream(UInt8TypedPacket);
-        packetStream1.attachToStream(outSocket).pipe(runImmediately());
+        packetStream1.attachToStream(outSocket).pipe(ignoreErrors(), runImmediately());
 
         const packetStream2 = new PacketStream(UInt8TypedPacket);
-        const statusPromise = observableToErrorPromise(packetStream2.attachToStream(outSocket).pipe(take(1)));
+        const statusEvent = packetStream2.attachToStream(outSocket).pipe(
+            take(1),
+            mapTo(true),
+            catchError(() => of(false))
+        ).toPromise();
 
         const incomingPacket = new UInt8TypedPacket();
         incomingPacket.writeTo(inSocket);
 
-        const didSucceed = await statusPromise;
+        const didSucceed = await statusEvent;
 
         expect(didSucceed).to.equal(false);
     });
@@ -251,26 +273,36 @@ describe('Packet streaming', () => {
         await firstStreamerPromise;
 
         const packetStream2 = new PacketStream(UInt8TypedPacket);
-        const statusPromise = observableToErrorPromise(packetStream2.attachToStream(outSocket).pipe(take(1)));
+        const statusEvent = packetStream2.attachToStream(outSocket).pipe(
+            take(1),
+            mapTo(true),
+            catchError(() => of(false))
+        ).toPromise();
 
         incomingPacket.writeTo(inSocket);
         incomingPacket.writeTo(inSocket);
 
-        const didSucceed = await statusPromise;
+        const didSucceed = await statusEvent;
 
         expect(didSucceed).to.equal(true);
     });
 
     it('should allow multiple subscribers on the same stream', async () => {
         const packetStream = new PacketStream(UInt8TypedPacket);
-        const streamObservable = packetStream.attachToStream(outSocket).pipe(take(1));
 
-        streamObservable.pipe(runImmediately());
+        const streamObservable = packetStream.attachToStream(outSocket);
+        streamObservable.subscribe();
+
+        const statusEvent = streamObservable.pipe(
+            take(1),
+            mapTo(true),
+            catchError(() => of(false))
+        ).toPromise();
 
         const incomingPacket = new UInt8TypedPacket();
         incomingPacket.writeTo(inSocket);
 
-        const didSucceed = await observableToErrorPromise(streamObservable);
+        const didSucceed = await statusEvent;
 
         expect(didSucceed).to.equal(true);
     });

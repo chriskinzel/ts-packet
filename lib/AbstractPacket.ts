@@ -2,10 +2,10 @@ import WritableStream = NodeJS.WritableStream;
 import ReadStream = NodeJS.ReadStream;
 
 import {concat, Observable} from 'rxjs';
-import {map, shareReplay, toArray} from 'rxjs/operators';
+import {map, toArray} from 'rxjs/operators';
 import {readTypedFieldFromBuffer} from './BufferReadUtils';
 import {typedFieldToBuffer} from './BufferWriteUtils';
-import {runImmediately} from './custom-rxjs';
+import {startAndRecord} from './custom-rxjs';
 import {readTypedFieldFromReadable} from './ReadableReadUtils';
 import {BUFFER_OFFSET_SYMBOL, PACKET_STRUCTURE_SYMBOL, PacketFieldStructureMetadata} from './Types';
 
@@ -29,7 +29,7 @@ export abstract class AbstractPacket {
             } else {
                 writable.once('drain', write);
             }
-        }).pipe(shareReplay(), runImmediately());
+        }).pipe(startAndRecord());
     }
 
     public readFrom(readable: ReadStream): Observable<this> {

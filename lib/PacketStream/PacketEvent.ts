@@ -30,9 +30,9 @@ export class PacketEvent<T extends PacketTypeTypes> {
         }
     }
 
-    public ifUnknown(handler: (unexpectedType: T, recoveryOptions: PacketStreamErrorRecoveryOptions) => void): void {
+    public ifUnknown(handler: (recoveryOptions: PacketStreamErrorRecoveryOptions, unexpectedType: T) => void): void {
         if (this.packet === undefined && this.packetClass === undefined) {
-            handler(this.packetType, this.recoveryOptions);
+            handler(this.recoveryOptions, this.packetType);
         }
     }
 }
