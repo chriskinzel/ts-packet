@@ -62,8 +62,9 @@ export function typedPrimitiveToBuffer(field: PacketFieldPrimitive,
 
         default:
             throw {
-                name:        'Packet Field Type Error',
-                message:     'Unrecognized fixed width type.'
+                name:    'Packet Field Type Error',
+                message: 'Unrecognized fixed width type.',
+                toString: () => 'Packet Field Type Error: Unrecognized fixed width type.'
             };
     }
 

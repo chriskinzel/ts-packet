@@ -34,8 +34,9 @@ export class PacketStream<T extends PacketTypeTypes> {
         return Observable.create(observer => {
             if (this.fieldType === undefined) {
                 throw {
-                    name: 'Packet Stream Missing Types Error',
-                    message: 'Attempted to attach to ReadStream without any specified packet types'
+                    name:    'Packet Stream Missing Types Error',
+                    message: 'Attempted to attach to ReadStream without any specified packet types',
+                    toString: () => 'Attempted to attach to ReadStream without any specified packet types'
                 };
             }
 
@@ -105,8 +106,9 @@ export class PacketStream<T extends PacketTypeTypes> {
 
                         if (!errorHandled) {
                             throw {
-                                name: 'Uncaught Packet Stream Unexpected Packet Error',
-                                message: 'Encountered unknown packet type in ReadStream.'
+                                name:    'Uncaught Packet Stream Unexpected Packet Error',
+                                message: 'Encountered unknown packet type in ReadStream.',
+                                toString: () => 'Encountered unknown packet type in ReadStream.'
                             };
                         }
                     }
@@ -137,8 +139,9 @@ export class PacketStream<T extends PacketTypeTypes> {
     private lockReadbleToSubscriber(readable: ReadStream, subscriber: Subscriber<any>) {
         if (readable[READABLE_LOCK_SYMBOL] !== undefined) {
             throw {
-                name: 'Packet Stream Concurrency Error',
-                message: 'Attempted to attach more than one PacketStream to the same ReadStream.'
+                name:    'Packet Stream Concurrency Error',
+                message: 'Attempted to attach more than one PacketStream to the same ReadStream.',
+                toString: () => 'Attempted to attach more than one PacketStream to the same ReadStream.'
             };
         }
 
