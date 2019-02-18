@@ -1,15 +1,18 @@
 import {MonoTypeOperatorFunction, SchedulerLike} from 'rxjs';
-import {catchError, shareReplay} from 'rxjs/operators';
+import {shareReplay} from 'rxjs/operators';
 
-export function runImmediately<T>(): MonoTypeOperatorFunction<T> {
+export function runImmediately<T>(ignoreError = false): MonoTypeOperatorFunction<T> {
     return source => {
-        source.subscribe();
+        if (ignoreError) {
+            source.subscribe({
+                error: () => {/* */}
+            });
+        } else {
+            source.subscribe();
+        }
+
         return source;
     };
-}
-
-export function ignoreErrors<T>(): MonoTypeOperatorFunction<T> {
-    return source => source.pipe(catchError(() => source));
 }
 
 export function startAndRecord<T>(bufferSize: number = Number.POSITIVE_INFINITY,
@@ -17,7 +20,6 @@ export function startAndRecord<T>(bufferSize: number = Number.POSITIVE_INFINITY,
                                   scheduler?: SchedulerLike): MonoTypeOperatorFunction<T> {
     return source => source.pipe(
         shareReplay(bufferSize, windowTime, scheduler),
-        ignoreErrors(),
-        runImmediately()
+        runImmediately(true)
     );
 }

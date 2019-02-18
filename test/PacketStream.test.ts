@@ -5,7 +5,7 @@ import {AddressInfo, Server, Socket} from 'net';
 import {of} from 'rxjs';
 import {catchError, mapTo, take, toArray} from 'rxjs/operators';
 import {PacketEvent, PacketStream, UInt8} from '../dist';
-import {ignoreErrors, runImmediately} from '../lib/custom-rxjs';
+import {runImmediately} from '../lib/custom-rxjs';
 import {UInt16TypedPacket} from './test-packets/TypedPackets/UInt16TypedPacket';
 import {UInt32TypedPacket} from './test-packets/TypedPackets/UInt32TypedPacket';
 import {UInt8TypedPacket} from './test-packets/TypedPackets/UInt8TypedPacket';
@@ -246,7 +246,7 @@ describe('Packet streaming', () => {
 
     it('shouldn\'t allow multiple streamers on the same socket', async () => {
         const packetStream1 = new PacketStream(UInt8TypedPacket);
-        packetStream1.attachToStream(outSocket).pipe(ignoreErrors(), runImmediately());
+        packetStream1.attachToStream(outSocket).pipe(runImmediately(true));
 
         const packetStream2 = new PacketStream(UInt8TypedPacket);
         const statusEvent = packetStream2.attachToStream(outSocket).pipe(
